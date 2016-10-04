@@ -13,6 +13,9 @@ class MergeMultiGraph(object):
     def __init__(self, *layer_path):
         self.graphs = []
         self.nodes = []
+        self.revealed_nodes = {}  # (index1, index2)->nodes set
+        self.same_nodes = {}  # (index1, index2)->nodes set
+        self.merged_g = None
         for index, p in enumerate(layer_path):
             g, g_nodes = self.construct_graph_from_file(p, index)
             self.graphs.append(g)
@@ -37,11 +40,14 @@ class MergeMultiGraph(object):
     def random_select_revealed_node(self, alpha, index1, index2):
         """select some nodes as revealed nodes randomly,
         alpha is percent of all same nodes."""
-        same_node = self.nodes[index1] & self.nodes[index2]
-        s = int(alpha * len(same_node))
+        same_nodes = self.nodes[index1] & self.nodes[index2]
+        s = int(alpha * len(same_nodes))
         logging.info("graph {}-{} random revealed nodes {}/{}.".format
-                     (index1, index2, s, len(same_node)))
-        return random.sample(same_node, s)
+                     (index1, index2, s, len(same_nodes)))
+        revealed_nodes = random.sample(same_nodes, s)
+        self.revealed_nodes[(index1, index2)] = set(revealed_nodes)
+        self.same_nodes[(index1, index2)] = same_nodes
+        return revealed_nodes
 
     def construct_merge_sequence(self):
         """construct merge seq which is a sorted revealed nodes on
@@ -62,7 +68,7 @@ class MergeMultiGraph(object):
             g.remove_nodes_from(all_n)
         return sequence
 
-    def merge_graphs(self):
+    def merge_graphs(self, save_graph="merged_net.txt"):
         """merge revealed nodes to get a new graph, and write to file."""
         g = nx.union_all(self.graphs)
         merge_seq = self.construct_merge_sequence()
@@ -75,15 +81,19 @@ class MergeMultiGraph(object):
             logging.debug("merge nodes {}.".format(seq))
         logging.info("merged graph has {} nodes and {} edges.".format
                     (g.number_of_nodes(), g.number_of_edges()))
-        nx.write_edgelist(g, "merged_net.txt", data=False)
+        nx.write_edgelist(g, save_graph, data=False)
+        self.merged_g = g
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     path1 = r"./multiplex_embeddings_data/IPv4_IPv6 Internet/l_1.txt"
     path2 = r"./multiplex_embeddings_data/IPv4_IPv6 Internet/l_2.txt"
+
+    path1 = r"./multiplex_embeddings_data/Drosophila Melanogaster/l_1.txt"
+    path2 = r"./multiplex_embeddings_data/Drosophila Melanogaster/l_2.txt"
     c = MergeMultiGraph(path1, path2)
-    c.merge_graphs()
+    c.merge_graphs("DM_merged_net.txt")
 
 
 
