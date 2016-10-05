@@ -68,7 +68,7 @@ class HyperMapAnalysis(object):
                 if y <= x:
                     continue
                 _, ry = y.split("_")
-                if rx == ry:
+                if rx == ry and (not self.g.has_edge(x, y)):
                     unmatched_nodes.append((x, y))
         logging.info("{} unmatched nodes.".format
                     (len(unmatched_nodes)))
@@ -100,7 +100,8 @@ class HyperMapAnalysis(object):
         return rd, rp
 
 
-def plot_bar(d, subp, title="", xlabel="", ylabel=""):
+def plot_bar(d, subp, title="", xlabel="", ylabel="", fig=1):
+    plt.figure(fig)
     p = plt.subplot(subp)
     p.bar(d.keys(), d.values())
     p.set_title(title)
@@ -110,19 +111,26 @@ def plot_bar(d, subp, title="", xlabel="", ylabel=""):
 
 
 def plot2():
-    path = "arXiv/l_8"
+    path = "merged/DM_merged_0.5"
     a = HyperMapAnalysis("./multiplex_embeddings_data/{}.txt".format(path),
-    "./multiplex_embeddings_data/{}_coordinates.txt".format(path), T=0.05)
+    "./multiplex_embeddings_data/{}_coordinates.txt".format(path), T=0.665)
     connected_dp = a.connected_nodes_correlation()
     unconnected_dp = a.unconnected_nodes_correlation()
 
     connected_d, connected_p = a.list_statisic(connected_dp)
     unconnected_d, unconnected_p = a.list_statisic(unconnected_dp)
-    plot_bar(connected_d, 221, "connected d", "dis", "num")
-    plot_bar(connected_p, 222, "connected p", "p", "num")
-    plot_bar(unconnected_d, 223, "unconnected d", "dis", "num")
-    plot_bar(unconnected_p, 224, "unconnected p", "p", "num")
+    plot_bar(connected_d, 321, "connected d", "dis", "num")
+    plot_bar(connected_p, 322, "connected p", "p", "num")
+    plot_bar(unconnected_d, 323, "unconnected d", "dis", "num")
+    plot_bar(unconnected_p, 324, "unconnected p", "p", "num")
+
+    unmatched_dp = a.unmatched_nodes_correlation()
+    unmatched_d, unmatched_p = a.list_statisic(unmatched_dp)
+    plot_bar(unmatched_d, 325, "unmatched d", "dis", "num")
+    plot_bar(unmatched_p, 326, "unmatched p", "p", "num")
+
     plt.savefig("{}_{}.png".format(path.replace("/", "_"), int(a.R)))
+
     plt.show()
 
 

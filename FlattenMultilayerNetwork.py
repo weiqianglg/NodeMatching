@@ -53,7 +53,7 @@ class MergeMultiGraph(object):
         """construct merge seq which is a sorted revealed nodes on
         different layer, node in the seq will be merged together."""
         sequence = []
-        alpha = 0.5
+        alpha = 0.8
         g = nx.Graph()
         for i, j in itertools.combinations(list(range(0, len(self.graphs))), 2):
             nodes = self.random_select_revealed_node(alpha, i, j)
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     path1 = r"./multiplex_embeddings_data/Drosophila Melanogaster/l_1.txt"
     path2 = r"./multiplex_embeddings_data/Drosophila Melanogaster/l_2.txt"
     c = MergeMultiGraph(path1, path2)
-    c.merge_graphs("DM_merged_net.txt")
+    c.merge_graphs("DM_merged_0.8.txt")
 
 
 
